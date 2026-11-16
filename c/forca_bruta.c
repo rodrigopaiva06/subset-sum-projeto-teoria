@@ -1,25 +1,44 @@
-#include <stdio.h>
+#include "entrada.h"
 
-/* Devolve 1 se existe um subconjunto de nums[i..n-1] que, somado a soma_atual,
-   dá exatamente o alvo. Devolve 0 caso contrário. */
-int forca_bruta(int nums[], int n, int i, long long soma_atual, long long alvo) {
-    if (i == n) {                      /* chegou numa folha: decidiu todos os números */
-        return soma_atual == alvo;
+int forca_bruta(const int nums[], int n, long long alvo) {
+    if (n > 62) {
+        return -1;                       /* 2^63 nao cabe na mascara */
     }
-    /* escolha 1: pega o número nums[i] */
-    if (forca_bruta(nums, n, i + 1, soma_atual + nums[i], alvo)) {
-        return 1;
+    unsigned long long total = 1ULL << n;        /* quantidade de subconjuntos: 2^n */
+
+    for (unsigned long long mask = 0; mask < total; mask++) {
+        long long soma = 0;                      /* zera para cada subconjunto */
+        for (int i = 0; i < n; i++) {
+            if (mask & (1ULL << i)) {            /* o bit i esta ligado? */
+                soma += nums[i];                 /* entao nums[i] entra na soma */
+            }
+        }
+        if (soma == alvo) return 1;              /* achou: para na hora */
     }
-    /* escolha 2: não pega o número nums[i] */
-    return forca_bruta(nums, n, i + 1, soma_atual, alvo);
+    return 0;                                    /* testou todos e nenhum deu */
 }
 
-int main(void) {
-    int nums[] = {3, 7, 2};
-    int n = 3;
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "uso: %s arquivo.txt [repeticoes]\n", argv[0]);
+        return 1;
+    }
+    int repeticoes = (argc >= 3) ? atoi(argv[2]) : 1;
 
-    printf("alvo 9:  %d\n", forca_bruta(nums, n, 0, 0, 9));   /* esperado 1 (7+2) */
-    printf("alvo 20: %d\n", forca_bruta(nums, n, 0, 0, 20));  /* esperado 0 */
-    printf("alvo 12: %d\n", forca_bruta(nums, n, 0, 0, 12));  /* esperado 1 (3+7+2) */
+    int n;
+    long long alvo;
+    int *nums = ler_entrada(argv[1], &n, &alvo);   /* leitura fora do cronometro */
+    if (nums == NULL) return 1;
+
+    int resposta = 0;
+    for (int r = 0; r < repeticoes; r++) {
+        double inicio = agora();
+        resposta = forca_bruta(nums, n, alvo);
+        double fim = agora();
+        printf("tempo_s %.9f\n", fim - inicio);
+    }
+    printf("resposta %d\n", resposta);
+
+    free(nums);
     return 0;
 }

@@ -1,27 +1,39 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "entrada.h"
 
-int prog_dinamica(int nums[], int n, int alvo) {
-    int i, j;          /* i = linha (quantos numeros ja usei), j = coluna (qual soma) */
-    int resposta;      /* guarda o valor final, tabela[n][alvo] */
+int prog_dinamica(const int nums[], int n, long long alvo) {
+    int i;
+    long long j;       
+    int resposta;
 
     if (alvo < 0 || n < 0) return 0;
 
-        /* cria a matriz: n+1 linhas, cada uma com alvo+1 colunas, tudo com 0 */
-    char **tabela = calloc(n + 1, sizeof(char *));
+    for (i = 0; i < n; i++) {
+        if (nums[i] < 0) return -1;
+    }
 
-    for (i = 0; i <= n; i++) tabela[i] = calloc(alvo + 1, sizeof(char));
+    /* cria a matriz: n+1 linhas, cada uma com alvo+1 colunas, tudo com 0 */
+    char **tabela = calloc(n + 1, sizeof(char *));
+    if (tabela == NULL) {
+        return -1;               
+    }
+
+    for (i = 0; i <= n; i++) {
+        tabela[i] = calloc((size_t)alvo + 1, sizeof(char));
+        if (tabela[i] == NULL) {                 
+            for (int k = 0; k < i; k++) free(tabela[k]);   
+            free(tabela);
+            return -1;
+        }
+    }
 
     /* sem usar nenhum numero, so da para somar 0 */
     tabela[0][0] = 1;
 
     /* preenche linha por linha */
     for (i = 1; i <= n; i++) {
-
-        int numero = nums[i - 1]; /* o numero novo desta linha */
+        int numero = nums[i - 1];              
 
         for (j = 0; j <= alvo; j++) {
-
             /* opcao 1: nao pego o numero novo -> copio da linha de cima */
             if (tabela[i - 1][j] == 1) tabela[i][j] = 1;
 
@@ -30,23 +42,36 @@ int prog_dinamica(int nums[], int n, int alvo) {
         }
     }
 
-    /* guarda a resposta antes de apagar a matriz */
     resposta = tabela[n][alvo];
 
     /* apaga a matriz: primeiro cada linha, depois a lista de linhas */
     for (i = 0; i <= n; i++) free(tabela[i]);
-
     free(tabela);
 
     return resposta;
 }
 
-int main(void) {
-    int nums[] = {3, 7, 2};
-    int n = 3;
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "uso: %s arquivo.txt [repeticoes]\n", argv[0]);
+        return 1;
+    }
+    int repeticoes = (argc >= 3) ? atoi(argv[2]) : 1;
 
-    printf("alvo 9:  %d\n", prog_dinamica(nums, n, 9));   /* esperado 1 (7+2) */
-    printf("alvo 20: %d\n", prog_dinamica(nums, n, 20));  /* esperado 0 */
-    printf("alvo 12: %d\n", prog_dinamica(nums, n, 12));  /* esperado 1 (3+7+2) */
+    int n;
+    long long alvo;
+    int *nums = ler_entrada(argv[1], &n, &alvo);
+    if (nums == NULL) return 1;
+
+    int resposta = 0;
+    for (int r = 0; r < repeticoes; r++) {
+        double inicio = agora();
+        resposta = prog_dinamica(nums, n, alvo);
+        double fim = agora();
+        printf("tempo_s %.9f\n", fim - inicio);
+    }
+    printf("resposta %d\n", resposta);
+
+    free(nums);
     return 0;
 }
