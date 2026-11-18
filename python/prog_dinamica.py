@@ -1,15 +1,7 @@
 import sys
 import time
 
-
-def ler_entrada(caminho):
-    with open(caminho) as f:
-        n, alvo = map(int, f.readline().split())
-        nums = list(map(int, f.read().split()))
-    if len(nums) != n:
-        raise ValueError("quantidade de numeros diferente de n")
-    return nums, alvo
-
+from entrada import ler_entrada
 
 def prog_dinamica(nums, alvo):
     if alvo < 0:
