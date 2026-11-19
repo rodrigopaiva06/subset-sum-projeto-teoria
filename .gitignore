@@ -221,3 +221,10 @@ __marimo__/
 
 *.exe
 c/bin/
+# executaveis do C no Mac/Linux (no Windows sao .exe)
+c/forca_bruta
+c/prog_dinamica
+
+# entradas geradas pelo scripts/gerar_entradas.py (recriadas com a mesma semente)
+entradas/fb_*.txt
+entradas/pd_*.txt
